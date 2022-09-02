@@ -103,7 +103,7 @@ export const MainScreen = ({socket}) => {
             <br/>
             <button onClick={() => hi()}>HI</button>
             <br/>
-            {cards.map(card => <p>{card.number + " " + card.suit}</p>)}
+            {cards.map(card => <p>{card.sign + " " + card.suit}</p>)}
         </div>
     )
 }
