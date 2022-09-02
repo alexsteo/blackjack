@@ -8,6 +8,8 @@ export const MainScreen = ({socket}) => {
     const [message, setMessage] = useState(null);
     const [username, setUsername] = useState("");
 
+    const [staying, setStaying] = useState(false);
+
     const [cards, setCards] = useState([]);
     const [opponentCards, setOpponentCards] = useState(0);
 
@@ -19,6 +21,7 @@ export const MainScreen = ({socket}) => {
 
         socket.on("nextHand", () => {
             setCards([]);
+            setStaying(false);
             setOpponentCards(0);
         })
 
@@ -76,6 +79,7 @@ export const MainScreen = ({socket}) => {
     }
 
     const stay = () => {
+        setStaying(true);
         socket.emit("stay");
     }
 
@@ -99,7 +103,7 @@ export const MainScreen = ({socket}) => {
             <br/>
             <button onClick={() => stay()}>Stay</button>
             <br/>
-            <button onClick={() => nextHand()}>NextHand</button>
+            {staying && <button onClick={() => nextHand()}>NextHand</button>}
             <br/>
             <button onClick={() => hi()}>HI</button>
             <br/>
