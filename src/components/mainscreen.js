@@ -2,21 +2,25 @@ import {useEffect, useState} from "react";
 import {Card} from "../objects/card";
 import {io} from "socket.io-client";
 
-const socket = io("ws://localhost:3001", {autoConnect: false});
-
-export const MainScreen = () => {
+export const MainScreen = ({socket}) => {
 
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [message, setMessage] = useState(null);
     const [username, setUsername] = useState("");
 
     const [cards, setCards] = useState([]);
+    const [opponentCards, setOpponentCards] = useState(0);
 
     useEffect(() => {
 
         socket.onAny((event, ...args) => {
             // console.log(event, args);
         });
+
+        socket.on("nextHand", () => {
+            setCards([]);
+            setOpponentCards(0);
+        })
 
         socket.on('connect', () => {
             setIsConnected(true);
@@ -46,6 +50,10 @@ export const MainScreen = () => {
             console.log("h", message)
         })
 
+        socket.on("opponentDraw", () => {
+            setOpponentCards(opponentCards => opponentCards + 1);
+        })
+
         socket.on("connect_error", (err) => {
             if (err.message === "invalid username") {
                 console.log(err)
@@ -53,8 +61,7 @@ export const MainScreen = () => {
         });
 
         return () => {
-            socket.off('connect');
-            socket.off('message');
+            socket.off("opponentDraw");
         };
     }, []);
 
@@ -76,8 +83,14 @@ export const MainScreen = () => {
         socket.emit("hi");
     }
 
+    const nextHand = () => {
+        socket.emit("nextHand");
+    }
+
     return (
         <div>
+            <br/>
+            <p>opponent cards: {opponentCards}</p>
             <input value={username} onChange={(e) => setUsername(e.target.value)}></input>
             <br/>
             <button onClick={() => connect()}>Connect</button>
@@ -85,6 +98,8 @@ export const MainScreen = () => {
             <button onClick={() => draw()}>DRAW</button>
             <br/>
             <button onClick={() => stay()}>Stay</button>
+            <br/>
+            <button onClick={() => nextHand()}>NextHand</button>
             <br/>
             <button onClick={() => hi()}>HI</button>
             <br/>
