@@ -1,17 +1,21 @@
 import {useEffect, useState} from "react";
-import {Card} from "../objects/card";
-import {io} from "socket.io-client";
+import {Card} from "./card";
 
 export const MainScreen = ({socket}) => {
 
-    const [isConnected, setIsConnected] = useState(socket.connected);
-    const [message, setMessage] = useState(null);
     const [username, setUsername] = useState("");
+    const [usernameText, setUsernameText] = useState("");
+    const [otherUsername, setOtherUsername] = useState("");
+    const [id, setId] = useState("");
 
-    const [staying, setStaying] = useState(false);
+    const [showResults, setShowResults] = useState(false);
+    const [results, setResults] = useState("");
+    const [score, setScore] = useState(0);
+    const [otherScore, setOtherScore] = useState(0);
 
     const [cards, setCards] = useState([]);
-    const [opponentCards, setOpponentCards] = useState(0);
+    const [opponentCardCount, setOpponentCardCount] = useState(0);
+    const [opponentCards, setOpponentCards] = useState([]);
 
     useEffect(() => {
 
@@ -21,40 +25,37 @@ export const MainScreen = ({socket}) => {
 
         socket.on("nextHand", () => {
             setCards([]);
-            setStaying(false);
-            setOpponentCards(0);
+            setOpponentCardCount(0);
+            setShowResults(true);
+            setOtherScore(0);
+            setScore(0);
+            setResults("");
+            setOpponentCards([]);
         })
 
-        socket.on('connect', () => {
-            setIsConnected(true);
-        });
+        socket.on("conId", (message) => {
+            setId(message)
+        })
 
-        socket.on('msg', (message) => {
-            setMessage(message);
-        });
+        socket.on("players", (message) => {
+            console.log(username, message)
+            setOtherUsername(message.filter(player => player !== username)[0])
+        })
 
         socket.on('draw', (message) => {
             setCards(message)
         })
 
-        socket.on("resultsw", (message) => {
-            console.log("w", message)
-        })
-
-        socket.on("resultsl", (message) => {
-            console.log("l", message)
-        })
-
-        socket.on("resultsd", (message) => {
-            console.log("d", message)
-        })
-
-        socket.on("hello", (message) => {
-            console.log("h", message)
+        socket.on("results", (message) => {
+            setShowResults(true);
+            setOtherScore(message.other);
+            setScore(message.score);
+            setResults(message.result);
+            setOpponentCards(message.otherCards);
         })
 
         socket.on("opponentDraw", () => {
-            setOpponentCards(opponentCards => opponentCards + 1);
+            setOpponentCardCount(opponentCards => opponentCards + 1);
         })
 
         socket.on("connect_error", (err) => {
@@ -64,13 +65,19 @@ export const MainScreen = ({socket}) => {
         });
 
         return () => {
+            socket.off("nextHand");
+            socket.off("conId");
+            socket.off("players");
+            socket.off("draw");
+            socket.off("results");
             socket.off("opponentDraw");
+            socket.off("connect_error");
         };
     }, []);
 
     const connect = () => {
-
-        socket.auth = {username};
+        setUsername(usernameText);
+        socket.auth = {username: usernameText};
         socket.connect();
     }
 
@@ -79,35 +86,51 @@ export const MainScreen = ({socket}) => {
     }
 
     const stay = () => {
-        setStaying(true);
         socket.emit("stay");
-    }
-
-    const hi = () => {
-        socket.emit("hi");
     }
 
     const nextHand = () => {
         socket.emit("nextHand");
     }
 
+    const renderOpponentCards = () => {
+        if(opponentCards.length > 0) {
+            return opponentCards.map(card => <Card suit={card.suit} number={card.sign}></Card>)
+        } else {
+            return Array(opponentCardCount).fill(<Card suit={"card"} number={"back"}></Card>)
+        }
+    }
+
     return (
         <div>
-            <br/>
-            <p>opponent cards: {opponentCards}</p>
-            <input value={username} onChange={(e) => setUsername(e.target.value)}></input>
-            <br/>
-            <button onClick={() => connect()}>Connect</button>
-            <br/>
-            <button onClick={() => draw()}>DRAW</button>
-            <br/>
-            <button onClick={() => stay()}>Stay</button>
-            <br/>
-            {staying && <button onClick={() => nextHand()}>NextHand</button>}
-            <br/>
-            <button onClick={() => hi()}>HI</button>
-            <br/>
-            {cards.map(card => <p>{card.sign + " " + card.suit}</p>)}
+            {!id && <div>
+                <input value={usernameText} onChange={(e) => setUsernameText(e.target.value)}></input>
+                <button onClick={() => connect()}>Connect</button>
+            </div>}
+            {
+                id && <div>
+                    <div>
+                        {!results && <button onClick={() => draw()}>DRAW</button>}
+                        {!results && <button onClick={() => stay()}>Stay</button>}
+                        {results && <button onClick={() => nextHand()}>NextHand</button>}
+                    </div>
+                    <div>
+                        <div>
+                            {cards.length > 0 && <p>Your Cards:</p>}
+                            {cards.map(card => <Card suit={card.suit} number={card.sign}></Card>)}
+                        </div>
+                        <div>
+                            {otherUsername && opponentCardCount > 0 && <p>{otherUsername}'s cards</p>}
+                            {renderOpponentCards()}
+                        </div>
+                    </div>
+                    <div>
+                        <p>{results}</p>
+                        <p>Your score: {score}</p>
+                        <p>Other score: {otherScore}</p>
+                    </div>
+                </div>
+            }
         </div>
     )
 }

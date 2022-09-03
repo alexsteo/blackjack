@@ -1,9 +1,13 @@
 import {createSlice} from "@reduxjs/toolkit";
 
-export const counterSlice = createSlice({
-    name: 'hello',
+export const gameSlice = createSlice({
+    name: 'game',
     initialState: {
-        data: []
+        username: '',
+        id: '',
+        cards: [],
+        opponentCards: [],
+        opponentCardCount: 0
     },
     reducers: {
         addData: (state, action) => {
@@ -15,6 +19,6 @@ export const counterSlice = createSlice({
     },
 });
 
-export const {addData, clearData} = counterSlice.actions;
+export const {addData, clearData} = gameSlice.actions;
 
-export default counterSlice.reducer;
+export default gameSlice.reducer;
