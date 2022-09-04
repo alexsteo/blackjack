@@ -5,6 +5,7 @@ import {MainScreen} from "./components/mainscreen";
 import {io} from "socket.io-client";
 
 const socket = io("wss://blackjack-server-teo.herokuapp.com/", {autoConnect: false});
+// const socket = io("ws://localhost:3001/", {autoConnect: false});
 console.log(socket);
 
 function App() {
