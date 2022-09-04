@@ -4,7 +4,7 @@ import {A} from "./components/a";
 import {MainScreen} from "./components/mainscreen";
 import {io} from "socket.io-client";
 
-const socket = io(process.env.REACT_APP_SOCKET_SERVER, {autoConnect: false});
+const socket = io("https://blackjack-server-teo.herokuapp.com/", {autoConnect: false});
 
 console.log(process.env.REACT_APP_SOCKET_SERVER)
 
