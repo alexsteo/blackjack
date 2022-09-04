@@ -38,7 +38,6 @@ export const MainScreen = ({socket}) => {
         })
 
         socket.on("players", (message) => {
-            console.log(username, message)
             setOtherUsername(message.filter(player => player !== username)[0])
         })
 
