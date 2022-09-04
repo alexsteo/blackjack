@@ -1,5 +1,3 @@
-import card from '../res/cards/10S.png'
-
 
 export const Card = ({suit, number}) => {
     const chooseCardImage = () => {
