@@ -4,7 +4,7 @@ import {A} from "./components/a";
 import {MainScreen} from "./components/mainscreen";
 import {io} from "socket.io-client";
 
-const socket = io("ws://localhost:3001", {autoConnect: false});
+const socket = io(process.env.REACT_APP_SOCKET_SERVER, {autoConnect: false});
 
 function App() {
   return (

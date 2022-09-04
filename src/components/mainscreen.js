@@ -72,7 +72,7 @@ export const MainScreen = ({socket}) => {
             socket.off("opponentDraw");
             socket.off("connect_error");
         };
-    }, []);
+    }, [username]);
 
     const connect = () => {
         setUsername(usernameText);
